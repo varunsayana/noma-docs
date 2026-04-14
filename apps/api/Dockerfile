@@ -10,28 +10,27 @@ RUN apk add --no-cache openssl openssl-dev libc6-compat
 # Copy workspace configuration
 COPY package.json pnpm-workspace.yaml turbo.json ./
 
-# Copy package structures
+# Copy package structures first (for better layer caching)
 COPY apps/api/package.json apps/api/
 COPY packages/database/package.json packages/database/
 
-# Copy full code for api and database
+# Copy full source
 COPY apps/api ./apps/api
 COPY packages/database ./packages/database
 
-# Install dependencies for workspace
+# Install all workspace deps
 RUN pnpm install
 
-# Generate Prisma client and compile database
+# Generate Prisma client
 WORKDIR /app/packages/database
 RUN npx prisma generate
-RUN pnpm run build
 
-# Build the API
+# Build the API TypeScript
 WORKDIR /app/apps/api
 RUN pnpm run build
 
-# Expose API and WebSocket Port
+# Expose API port
 EXPOSE 4000
 
-# Start server
-CMD ["pnpm", "run", "start"]
+# On start: push schema to DB then start server
+CMD ["sh", "-c", "cd /app/packages/database && npx prisma db push --skip-generate && cd /app/apps/api && node dist/index.js"]
