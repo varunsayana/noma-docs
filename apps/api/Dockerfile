@@ -21,9 +21,10 @@ COPY packages/database ./packages/database
 # Install dependencies for workspace
 RUN pnpm install
 
-# Generate Prisma client
+# Generate Prisma client and compile database
 WORKDIR /app/packages/database
 RUN npx prisma generate
+RUN pnpm run build
 
 # Build the API
 WORKDIR /app/apps/api
