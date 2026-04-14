@@ -67,12 +67,12 @@ const server = Server.configure({
 app.use("/api/auth", authRouter);
 
 // WebSocket Route
-app.ws("/collaboration", (websocket, request) => {
+app.ws("/collaboration", (websocket: any, request: any) => {
   server.handleConnection(websocket, request);
 });
 
 // HTTP REST API fallback
-app.get("/", (req, res) => {
+app.get("/", (req: express.Request, res: express.Response) => {
   res.send("Noma Docs API running.");
 });
 
