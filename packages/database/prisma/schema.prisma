@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  passwordHash  String
+  name          String?
+  avatarUrl     String?
+  memberships   Membership[]
+  documents     Document[]   @relation("CreatedDocuments")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Organization {
+  id          String       @id @default(uuid())
+  name        String
+  slug        String       @unique
+  workspaces  Workspace[]
+  memberships Membership[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Workspace {
+  id             String       @id @default(uuid())
+  name           String
+  organization   Organization @relation(fields: [orgId], references: [id])
+  orgId          String
+  documents      Document[]
+  folders        Folder[]
+  isPersonal     Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Membership {
+  id             String       @id @default(uuid())
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  organization   Organization @relation(fields: [orgId], references: [id])
+  orgId          String
+  role           Role         @default(MEMBER)
+  createdAt      DateTime     @default(now())
+
+  @@unique([userId, orgId])
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+  GUEST
+}
+
+model Folder {
+  id          String     @id @default(uuid())
+  name        String
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id])
+  workspaceId String
+  parentId    String?
+  parent      Folder?    @relation("FolderToFolder", fields: [parentId], references: [id])
+  children    Folder[]   @relation("FolderToFolder")
+  documents   Document[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Document {
+  id             String    @id @default(uuid())
+  title          String    @default("Untitled")
+  content        Bytes?    // Yjs encoded binary update
+  workspace      Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId    String
+  folder         Folder?   @relation(fields: [folderId], references: [id])
+  folderId       String?
+  creator        User      @relation("CreatedDocuments", fields: [creatorId], references: [id])
+  creatorId      String
+  isCanvasMode   Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
