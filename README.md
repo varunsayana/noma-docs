@@ -43,7 +43,7 @@ Running Noma Docs is as simple as bringing up the Docker Compose stack.
    ```
    Or explicitly using Docker:
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
 
 Noma Docs will be available at `http://localhost:3000`.

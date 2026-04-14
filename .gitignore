@@ -1,0 +1,7 @@
+node_modules
+.local-node
+.pnpm-store
+.next
+dist
+.env
+coverage

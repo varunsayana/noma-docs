@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.12",
     "@tiptap/extension-character-count": "^2.3.0",
     "@tiptap/extension-collaboration": "^2.3.0",
     "@tiptap/extension-collaboration-cursor": "^2.3.0",
