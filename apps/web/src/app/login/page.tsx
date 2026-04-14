@@ -26,7 +26,7 @@ export default function LoginPage() {
         setError(data.error || "Invalid credentials");
         return;
       }
-      router.push(data.user?.isAdmin ? "/admin" : "/d/home");
+      router.push(data.user?.isAdmin ? "/app" : "/app");
     } catch {
       setError("Cannot connect to server. Is the application running?");
     } finally {

@@ -75,14 +75,27 @@
   }
 }
 
-/* Tiptap specific styles */
+/* Tiptap editor styles */
 .ProseMirror {
   outline: none;
+  min-height: 400px;
 }
 .ProseMirror p.is-editor-empty:first-child::before {
-  color: #adb5bd;
+  color: rgba(255,255,255,0.18);
   content: attr(data-placeholder);
   float: left;
   height: 0;
   pointer-events: none;
 }
+.ProseMirror h1 { font-size: 1.875rem; font-weight: 700; color: rgba(255,255,255,0.9); margin-bottom: 0.5rem; margin-top: 1.5rem; }
+.ProseMirror h2 { font-size: 1.375rem; font-weight: 600; color: rgba(255,255,255,0.85); margin-bottom: 0.4rem; margin-top: 1.25rem; }
+.ProseMirror h3 { font-size: 1.125rem; font-weight: 600; color: rgba(255,255,255,0.8); margin-bottom: 0.3rem; margin-top: 1rem; }
+.ProseMirror p { margin-bottom: 0.75rem; color: rgba(255,255,255,0.75); line-height: 1.75; }
+.ProseMirror ul, .ProseMirror ol { padding-left: 1.5rem; margin-bottom: 0.75rem; color: rgba(255,255,255,0.75); }
+.ProseMirror li { margin-bottom: 0.25rem; line-height: 1.75; }
+.ProseMirror ul[data-type="taskList"] { list-style: none; padding-left: 0; }
+.ProseMirror ul[data-type="taskList"] li { display: flex; align-items: flex-start; gap: 0.5rem; }
+.ProseMirror ul[data-type="taskList"] li label { margin-top: 0.3rem; }
+.ProseMirror code:not(pre code) { background: rgba(255,255,255,0.08); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.875em; color: #a78bfa; font-family: monospace; }
+.ProseMirror strong { color: rgba(255,255,255,0.9); }
+.ProseMirror hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 1.5rem 0; }

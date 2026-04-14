@@ -36,9 +36,21 @@ authRouter.post("/setup", async (req: express.Request, res: express.Response) =>
     const user = await prisma.user.create({
       data: { email, passwordHash, name: name || "Admin", isAdmin: true },
     });
+
+    // Auto-create default organization and workspace
+    const slug = `org-${Date.now()}`;
+    const org = await prisma.organization.create({
+      data: {
+        name: (name || "My") + "'s Workspace",
+        slug,
+        memberships: { create: { userId: user.id, role: "OWNER" } },
+        workspaces: { create: { name: "Home", isPersonal: true } },
+      },
+    });
+
     const token = jwt.sign({ userId: user.id, isAdmin: true }, JWT_SECRET, { expiresIn: "7d" });
     setTokenCookie(res, token);
-    return res.json({ user: { id: user.id, email: user.email, name: user.name, isAdmin: true }, token });
+    return res.json({ user: { id: user.id, email: user.email, name: user.name, isAdmin: true }, token, orgId: org.id });
   } catch (error) {
     console.error("Setup error:", error);
     return res.status(500).json({ error: "Internal server error" });
