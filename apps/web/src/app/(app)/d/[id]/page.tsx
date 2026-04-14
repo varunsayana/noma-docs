@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useApp } from "@/app/(app)/layout";
+import { useApp } from "@/app/(app)/AppContext";
 import dynamic from "next/dynamic";
 
 const TiptapEditor = dynamic(() => import("@/components/TiptapEditor"), { ssr: false });
