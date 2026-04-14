@@ -24,11 +24,9 @@ export default function AdminPanel() {
   const [formError, setFormError] = useState("");
   const [formLoading, setFormLoading] = useState(false);
 
-  const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/api/admin/users`, { credentials: "include" });
+      const res = await fetch("/api/admin/users", { credentials: "include" });
       if (res.status === 401 || res.status === 403) {
         router.push("/login");
         return;
@@ -36,11 +34,11 @@ export default function AdminPanel() {
       const data = await res.json();
       setUsers(data.users || []);
     } catch {
-      setError("Failed to load users. Make sure the API is running.");
+      setError("Failed to load users. Make sure the API container is running.");
     } finally {
       setLoading(false);
     }
-  }, [API, router]);
+  }, [router]);
 
   useEffect(() => {
     fetchUsers();
@@ -51,7 +49,7 @@ export default function AdminPanel() {
     setFormError("");
     setFormLoading(true);
     try {
-      const res = await fetch(`${API}/api/admin/users`, {
+      const res = await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -64,10 +62,7 @@ export default function AdminPanel() {
       }
       setUsers((prev) => [...prev, data.user]);
       setShowAddUser(false);
-      setNewEmail("");
-      setNewPassword("");
-      setNewName("");
-      setNewIsAdmin(false);
+      setNewEmail(""); setNewPassword(""); setNewName(""); setNewIsAdmin(false);
     } catch {
       setFormError("Network error");
     } finally {
@@ -76,214 +71,256 @@ export default function AdminPanel() {
   }
 
   async function handleDeleteUser(id: string) {
-    if (!confirm("Are you sure you want to delete this user?")) return;
-    try {
-      const res = await fetch(`${API}/api/admin/users/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (res.ok) setUsers((prev) => prev.filter((u) => u.id !== id));
-    } catch {
-      alert("Failed to delete user");
-    }
+    if (!confirm("Are you sure you want to remove this user?")) return;
+    const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE", credentials: "include" });
+    if (res.ok) setUsers((prev) => prev.filter((u) => u.id !== id));
   }
 
   async function handleLogout() {
-    await fetch(`${API}/api/auth/logout`, { method: "POST", credentials: "include" });
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     router.push("/login");
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
-      {/* Top Nav */}
-      <header className="border-b border-slate-700/50 bg-slate-900/80 backdrop-blur sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">N</span>
-            </div>
-            <span className="text-white font-semibold text-lg">Noma Docs</span>
-            <span className="text-slate-500 text-sm">/ Admin</span>
+    <div className="min-h-screen bg-[#0f0f0f] text-white">
+      {/* Sidebar */}
+      <div className="fixed left-0 top-0 h-full w-60 bg-[#131313] border-r border-white/5 flex flex-col z-10">
+        {/* Logo */}
+        <div className="flex items-center gap-2.5 px-4 py-4 border-b border-white/5">
+          <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+            <span className="text-white text-[10px] font-bold">N</span>
           </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push("/d/home")}
-              className="text-slate-400 hover:text-white text-sm transition-colors"
-            >
-              Open Workspace →
-            </button>
-            <button
-              onClick={handleLogout}
-              className="text-slate-400 hover:text-red-400 text-sm transition-colors"
-            >
-              Sign out
-            </button>
-          </div>
+          <span className="font-semibold text-white/90 text-sm tracking-tight">Noma Docs</span>
         </div>
-      </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-10">
-        {/* Page Title */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white">User Management</h1>
-            <p className="text-slate-400 text-sm mt-1">
-              Manage who has access to your Noma Docs workspace.
-            </p>
+        {/* Nav */}
+        <nav className="flex-1 px-3 py-3 space-y-0.5">
+          <div className="px-2 py-1.5 rounded-md bg-white/5 text-white text-sm font-medium flex items-center gap-2.5">
+            <svg className="w-4 h-4 text-white/50" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3z"/>
+            </svg>
+            Users
           </div>
           <button
-            onClick={() => setShowAddUser(true)}
-            className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+            onClick={() => router.push("/d/home")}
+            className="w-full px-2 py-1.5 rounded-md text-white/40 hover:text-white/80 hover:bg-white/5 text-sm text-left flex items-center gap-2.5 transition-colors"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 5v14M5 12h14"/>
+            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M2 2h5v5H2V2zm7 0h5v5H9V2zM2 9h5v5H2V9zm7 0h5v5H9V9z"/>
             </svg>
-            Add User
+            Workspace
+          </button>
+        </nav>
+
+        {/* Footer */}
+        <div className="px-3 py-3 border-t border-white/5">
+          <button
+            onClick={handleLogout}
+            className="w-full px-2 py-1.5 rounded-md text-white/30 hover:text-red-400 hover:bg-red-500/5 text-sm text-left flex items-center gap-2.5 transition-colors"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
+              <path fillRule="evenodd" d="M10 3a1 1 0 0 0-1 1v1H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h5v1a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h-3zM9 5H4v6h5V5zm1 1h2v4h-2V6z" clipRule="evenodd"/>
+            </svg>
+            Sign out
           </button>
         </div>
+      </div>
 
-        {/* Add User Modal */}
-        {showAddUser && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-700/50 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-              <h2 className="text-lg font-semibold text-white mb-1">Add New User</h2>
-              <p className="text-slate-400 text-sm mb-5">Create credentials for a new user.</p>
+      {/* Main area */}
+      <div className="pl-60">
+        {/* Top bar */}
+        <div className="sticky top-0 z-10 bg-[#0f0f0f]/80 backdrop-blur-xl border-b border-white/5">
+          <div className="flex items-center justify-between px-8 py-4">
+            <div>
+              <h1 className="text-[15px] font-semibold text-white/90">Users</h1>
+              <p className="text-[13px] text-white/30 mt-0.5">
+                Manage who can access this workspace
+              </p>
+            </div>
+            <button
+              onClick={() => setShowAddUser(true)}
+              className="flex items-center gap-2 px-3.5 py-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-violet-500/20"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 2a1 1 0 0 1 1 1v4h4a1 1 0 0 1 0 2H9v4a1 1 0 0 1-2 0V9H3a1 1 0 0 1 0-2h4V3a1 1 0 0 1 1-1z"/>
+              </svg>
+              Add user
+            </button>
+          </div>
+        </div>
 
-              {formError && (
-                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
-                  {formError}
+        {/* Content */}
+        <div className="p-8">
+          {error && (
+            <div className="mb-6 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="flex items-center justify-center py-24 text-white/20 text-sm animate-pulse">
+              Loading users...
+            </div>
+          ) : (
+            <div className="rounded-xl border border-white/5 overflow-hidden">
+              {/* Table header */}
+              <div className="grid grid-cols-[2fr_1fr_1fr_80px] items-center px-5 py-3 bg-white/[0.02] border-b border-white/5">
+                <span className="text-[11px] font-medium text-white/30 uppercase tracking-wider">User</span>
+                <span className="text-[11px] font-medium text-white/30 uppercase tracking-wider">Role</span>
+                <span className="text-[11px] font-medium text-white/30 uppercase tracking-wider">Joined</span>
+                <span className="text-[11px] font-medium text-white/30 uppercase tracking-wider text-right">Action</span>
+              </div>
+
+              {users.length === 0 && (
+                <div className="py-16 text-center text-white/20 text-sm">
+                  No users yet. Add your first user above.
                 </div>
               )}
 
-              <form onSubmit={handleAddUser} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Name</label>
-                  <input
-                    type="text"
-                    placeholder="Jane Doe"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-colors"
-                  />
+              {users.map((user, i) => (
+                <div
+                  key={user.id}
+                  className={`grid grid-cols-[2fr_1fr_1fr_80px] items-center px-5 py-3.5 hover:bg-white/[0.02] transition-colors ${i > 0 ? "border-t border-white/[0.04]" : ""}`}
+                >
+                  {/* User info */}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500/40 to-indigo-600/40 border border-white/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-[11px] font-semibold text-white/70">
+                        {(user.name || user.email)[0].toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm text-white/80 font-medium truncate">{user.name || "—"}</div>
+                      <div className="text-[12px] text-white/30 truncate">{user.email}</div>
+                    </div>
+                  </div>
+
+                  {/* Role */}
+                  <div>
+                    {user.isAdmin ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20">
+                        Admin
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-white/[0.05] text-white/30 border border-white/[0.08]">
+                        Member
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Date */}
+                  <div className="text-[13px] text-white/30">
+                    {new Date(user.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  </div>
+
+                  {/* Action */}
+                  <div className="text-right">
+                    <button
+                      onClick={() => handleDeleteUser(user.id)}
+                      className="text-[12px] text-white/20 hover:text-red-400 font-medium transition-colors px-2 py-1 rounded hover:bg-red-500/5"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Email</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="jane@example.com"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
-                  <input
-                    type="password"
-                    required
-                    minLength={8}
-                    placeholder="Min. 8 characters"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-colors"
-                  />
-                </div>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={newIsAdmin}
-                    onChange={(e) => setNewIsAdmin(e.target.checked)}
-                    className="w-4 h-4 rounded accent-violet-500"
-                  />
-                  <span className="text-sm text-slate-300">Grant admin privileges</span>
-                </label>
-                <div className="flex gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddUser(false)}
-                    className="flex-1 py-2.5 border border-slate-700 text-slate-300 rounded-lg text-sm hover:bg-slate-800 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={formLoading}
-                    className="flex-1 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-                  >
-                    {formLoading ? "Creating..." : "Create User"}
-                  </button>
-                </div>
-              </form>
+              ))}
             </div>
-          </div>
-        )}
-
-        {/* Users Table */}
-        <div className="bg-slate-900 border border-slate-700/50 rounded-2xl overflow-hidden">
-          {loading ? (
-            <div className="p-12 text-center text-slate-400 animate-pulse">Loading users...</div>
-          ) : error ? (
-            <div className="p-12 text-center text-red-400">{error}</div>
-          ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-700/50">
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">User</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Role</th>
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Joined</th>
-                  <th className="text-right px-6 py-4 text-xs font-semibold text-slate-400 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user, i) => (
-                  <tr key={user.id} className={`${i > 0 ? "border-t border-slate-800/50" : ""} hover:bg-slate-800/30 transition-colors`}>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
-                          <span className="text-white text-xs font-semibold">
-                            {(user.name || user.email)[0].toUpperCase()}
-                          </span>
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-white">{user.name || "—"}</div>
-                          <div className="text-xs text-slate-400">{user.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      {user.isAdmin ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20">
-                          Admin
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-700/50 text-slate-400 border border-slate-700">
-                          Member
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-400">
-                      {new Date(user.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => handleDeleteUser(user.id)}
-                        className="text-slate-500 hover:text-red-400 text-xs font-medium transition-colors px-3 py-1 rounded hover:bg-red-500/10"
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           )}
-        </div>
 
-        <p className="text-center text-slate-600 text-xs mt-6">
-          {users.length} user{users.length !== 1 ? "s" : ""} in this workspace
-        </p>
-      </main>
+          <p className="mt-4 text-[12px] text-white/20">
+            {users.length} {users.length === 1 ? "user" : "users"} total
+          </p>
+        </div>
+      </div>
+
+      {/* Add User Modal */}
+      {showAddUser && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAddUser(false); }}
+        >
+          <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-base font-semibold text-white">Add a user</h2>
+                <p className="text-[13px] text-white/30 mt-0.5">Create login credentials for a new team member.</p>
+              </div>
+              <button onClick={() => setShowAddUser(false)} className="text-white/20 hover:text-white/60 transition-colors">
+                <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
+                </svg>
+              </button>
+            </div>
+
+            {formError && (
+              <div className="mb-4 px-3.5 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                {formError}
+              </div>
+            )}
+
+            <form onSubmit={handleAddUser} className="space-y-3.5">
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-medium text-white/50">Name</label>
+                <input
+                  type="text"
+                  placeholder="Jane Smith"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  className="w-full h-9 px-3.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/20 text-sm focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-medium text-white/50">Email</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="jane@example.com"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  className="w-full h-9 px-3.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/20 text-sm focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-medium text-white/50">Password</label>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  placeholder="Min. 8 characters"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full h-9 px-3.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/20 text-sm focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
+                />
+              </div>
+              <label className="flex items-center gap-3 cursor-pointer py-1">
+                <input
+                  type="checkbox"
+                  checked={newIsAdmin}
+                  onChange={(e) => setNewIsAdmin(e.target.checked)}
+                  className="w-4 h-4 rounded accent-violet-500 bg-white/5 border border-white/10"
+                />
+                <span className="text-[13px] text-white/60">Grant admin privileges</span>
+              </label>
+              <div className="flex gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowAddUser(false)}
+                  className="flex-1 h-9 border border-white/10 text-white/50 rounded-lg text-sm hover:bg-white/5 hover:text-white/80 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={formLoading}
+                  className="flex-1 h-9 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-40"
+                >
+                  {formLoading ? "Creating..." : "Create user"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function SetupPage() {
@@ -10,25 +10,13 @@ export default function SetupPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [checking, setChecking] = useState(true);
-
-  useEffect(() => {
-    // If setup is already done, redirect to login
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/setup-status`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.setupComplete) router.replace("/login");
-        else setChecking(false);
-      })
-      .catch(() => setChecking(false));
-  }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/setup`, {
+      const res = await fetch("/api/auth/setup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -41,90 +29,105 @@ export default function SetupPage() {
       }
       router.push("/admin");
     } catch {
-      setError("Cannot connect to server. Is the API running?");
+      setError("Cannot connect to server. Make sure the API container is running.");
     } finally {
       setLoading(false);
     }
   }
 
-  if (checking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-muted-foreground animate-pulse">Checking setup status...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-            <span className="text-white font-bold text-2xl">N</span>
-          </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Welcome to Noma Docs</h1>
-          <p className="text-slate-400 mt-2 text-sm">Let&apos;s set up your admin account to get started.</p>
-        </div>
+    <div className="min-h-screen bg-[#0f0f0f] text-white flex flex-col">
+      {/* Ambient background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-violet-600/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 -right-40 w-80 h-80 bg-indigo-600/8 rounded-full blur-3xl" />
+      </div>
 
-        {/* Card */}
-        <div className="bg-slate-900 border border-slate-700/50 rounded-2xl p-8 shadow-2xl">
-          <div className="mb-6">
-            <span className="inline-block bg-violet-500/10 text-violet-400 text-xs font-semibold px-3 py-1 rounded-full border border-violet-500/20">
-              First-time Setup
-            </span>
-            <h2 className="text-xl font-semibold text-white mt-3">Create Admin Account</h2>
-            <p className="text-slate-400 text-sm mt-1">
-              This is a one-time setup. After this, you can add other users from the admin panel.
+      {/* Header bar */}
+      <header className="relative z-10 flex items-center gap-3 px-8 py-5 border-b border-white/5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
+            <span className="text-white text-xs font-bold">N</span>
+          </div>
+          <span className="font-semibold text-white/90 tracking-tight">Noma Docs</span>
+        </div>
+        <div className="ml-2 px-2 py-0.5 rounded text-[11px] font-medium bg-violet-500/10 text-violet-400 border border-violet-500/20">
+          First-time Setup
+        </div>
+      </header>
+
+      {/* Main content */}
+      <div className="relative z-10 flex-1 flex items-center justify-center p-6">
+        <div className="w-full max-w-[420px]">
+          <div className="mb-8">
+            <h1 className="text-2xl font-semibold text-white tracking-tight">Create your admin account</h1>
+            <p className="mt-2 text-[15px] text-white/40 leading-relaxed">
+              You&apos;re the first here. Set up your administrator account to get started. You&apos;ll be able to add other users from the admin panel.
             </p>
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+            <div className="mb-5 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2.5">
+              <svg className="w-4 h-4 mt-0.5 flex-shrink-0" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm.75 4a.75.75 0 0 0-1.5 0v3.5a.75.75 0 0 0 1.5 0V5zm-.75 6a.875.875 0 1 0 0-1.75A.875.875 0 0 0 8 11z"/>
+              </svg>
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Your Name</label>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-white/60">Your name</label>
               <input
                 type="text"
-                placeholder="John Doe"
+                placeholder="Alex Johnson"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-colors"
+                className="w-full h-10 px-3.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/20 text-sm focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Email Address</label>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-white/60">Email address</label>
               <input
                 type="email"
                 required
-                placeholder="admin@example.com"
+                placeholder="admin@yourcompany.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-colors"
+                className="w-full h-10 px-3.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/20 text-sm focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Password</label>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-white/60">Password</label>
               <input
                 type="password"
                 required
                 minLength={8}
-                placeholder="Min. 8 characters"
+                placeholder="Minimum 8 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-colors"
+                className="w-full h-10 px-3.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/20 text-sm focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all"
               />
             </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-violet-500 hover:to-indigo-500 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+              className="w-full h-10 mt-2 bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold rounded-lg transition-colors shadow-lg shadow-violet-500/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {loading ? "Creating account..." : "Create Admin Account →"}
+              {loading ? (
+                <>
+                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Setting up...
+                </>
+              ) : (
+                "Create admin account →"
+              )}
             </button>
           </form>
         </div>
